@@ -5,7 +5,7 @@ import os
 
 from alembic import context
 from dotenv import load_dotenv
-from sqlalchemy import engine_from_config, pool
+from sqlalchemy import engine_from_config, pool, text
 
 from app.models import Base  # noqa: F401  # Import models so metadata is populated
 
@@ -47,6 +47,7 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
+        connection.execute(text("SET search_path TO public"))
         context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
