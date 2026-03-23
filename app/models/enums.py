@@ -33,3 +33,9 @@ class MetodoPago(str, Enum):
     TARJETA = "TARJETA"
     TRANSFERENCIA = "TRANSFERENCIA"
     QR = "QR"
+
+
+class TipoMovimientoInventario(str, Enum):
+    ENTRADA = "ENTRADA"
+    SALIDA = "SALIDA"
+    AJUSTE = "AJUSTE"

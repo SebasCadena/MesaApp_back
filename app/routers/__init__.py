@@ -1,4 +1,6 @@
+from app.routers.app_setting_router import router as app_setting_router
 from app.routers.category_router import router as category_router
+from app.routers.inventory_movement_router import router as inventory_movement_router
 from app.routers.material_router import router as material_router
 from app.routers.order_detail_router import router as order_detail_router
 from app.routers.order_router import router as order_router
@@ -10,12 +12,16 @@ from app.routers.reservation_router import router as reservation_router
 from app.routers.role_permission_router import router as role_permission_router
 from app.routers.role_router import router as role_router
 from app.routers.store_router import router as store_router
+from app.routers.store_setting_router import router as store_setting_router
 from app.routers.table_router import router as table_router
 from app.routers.user_role_router import router as user_role_router
 from app.routers.user_router import router as user_router
 
 __all__ = [
 	"store_router",
+	"app_setting_router",
+	"store_setting_router",
+	"inventory_movement_router",
 	"category_router",
 	"product_router",
 	"material_router",
