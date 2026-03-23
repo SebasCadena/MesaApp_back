@@ -1,0 +1,226 @@
+MODELO CORREGIDO - MESAAPP (BASE PARA SQLALCHEMY + ALEMBIC)
+
+OBJETIVO
+- Mantener tu dominio original.
+- Agregar integridad relacional, seguridad y estructura profesional.
+- Preparar una base limpia para migraciones.
+
+CONVENCIONES
+- Nombres en snake_case.
+- PK numerica: id (bigint, autoincremental).
+- Campos de auditoria: creado_en, actualizado_en.
+- Borrado logico cuando aplique: activo.
+- Password siempre como password_hash (nunca texto plano).
+
+TABLAS
+
+1) tiendas
+- id (PK)
+- nombre (varchar(120), not null)
+- slug (varchar(120), not null, unique)
+- nit (varchar(40), unique)
+- telefono (varchar(30))
+- correo (varchar(120))
+- direccion (varchar(255))
+- ciudad (varchar(80))
+- pais (varchar(80), default 'CO')
+- activo (boolean, not null, default true)
+- creado_en (timestamptz, not null, default now())
+- actualizado_en (timestamptz, not null, default now())
+
+2) configuraciones_app (global)
+- id (PK)
+- clave (varchar(100), not null, unique)
+- valor (text)
+- tipo_valor (varchar(20), not null, default 'string')
+- descripcion (varchar(255))
+- editable (boolean, not null, default true)
+- actualizado_por_usuario_id (FK -> usuarios.id)
+- actualizado_en (timestamptz, not null, default now())
+
+3) configuraciones_tienda
+- id (PK)
+- tienda_id (FK -> tiendas.id, not null)
+- clave (varchar(100), not null)
+- valor (text)
+- tipo_valor (varchar(20), not null, default 'string')
+- descripcion (varchar(255))
+- editable (boolean, not null, default true)
+- actualizado_por_usuario_id (FK -> usuarios.id)
+- actualizado_en (timestamptz, not null, default now())
+- unique (tienda_id, clave)
+
+4) usuarios
+- id (PK)
+- nombre (varchar(120), not null)
+- cedula (varchar(30), not null, unique)
+- celular (varchar(30), unique)
+- correo (varchar(120), not null, unique)
+- password_hash (varchar(255), not null)
+- direccion (varchar(255))
+- fecha_nacimiento (date)
+- activo (boolean, not null, default true)
+- creado_en (timestamptz, not null, default now())
+- actualizado_en (timestamptz, not null, default now())
+
+5) roles
+- id (PK)
+- nombre (varchar(50), not null, unique)
+- descripcion (varchar(255))
+- creado_en (timestamptz, not null, default now())
+- actualizado_en (timestamptz, not null, default now())
+
+6) permisos
+- id (PK)
+- nombre (varchar(80), not null, unique)
+- descripcion (varchar(255))
+
+7) rol_permiso
+- id (PK)
+- rol_id (FK -> roles.id, not null)
+- permiso_id (FK -> permisos.id, not null)
+- unique (rol_id, permiso_id)
+
+8) usuario_rol
+- id (PK)
+- usuario_id (FK -> usuarios.id, not null)
+- rol_id (FK -> roles.id, not null)
+- tienda_id (FK -> tiendas.id, not null)
+- salario (numeric(12,2), check >= 0)
+- fecha_contrato (date)
+- fecha_inicio (date, not null, default current_date)
+- fecha_fin (date)
+- activo (boolean, not null, default true)
+- check (fecha_fin is null or fecha_fin >= fecha_inicio)
+- unique (usuario_id, rol_id, tienda_id, fecha_inicio)
+
+9) categorias
+- id (PK)
+- tienda_id (FK -> tiendas.id, not null)
+- nombre (varchar(80), not null)
+- descripcion (varchar(255))
+- activo (boolean, not null, default true)
+- unique (tienda_id, nombre)
+
+10) productos
+- id (PK)
+- tienda_id (FK -> tiendas.id, not null)
+- nombre (varchar(120), not null)
+- descripcion (text)
+- precio (numeric(12,2), not null, check > 0)
+- categoria_id (FK -> categorias.id, not null)
+- img_url (text)
+- activo (boolean, not null, default true)
+- stock (numeric(12,3), not null, default 0, check >= 0)
+- stock_minimo (numeric(12,3), not null, default 0, check >= 0)
+- usa_receta (boolean, not null, default false)
+- creado_en (timestamptz, not null, default now())
+- actualizado_en (timestamptz, not null, default now())
+- unique (tienda_id, nombre)
+
+11) materiales
+- id (PK)
+- tienda_id (FK -> tiendas.id, not null)
+- nombre (varchar(120), not null)
+- unidad (varchar(20), not null)
+- stock (numeric(12,3), not null, default 0, check >= 0)
+- stock_minimo (numeric(12,3), not null, default 0, check >= 0)
+- creado_en (timestamptz, not null, default now())
+- actualizado_en (timestamptz, not null, default now())
+- unique (tienda_id, nombre)
+
+12) producto_material
+- id (PK)
+- producto_id (FK -> productos.id, not null)
+- material_id (FK -> materiales.id, not null)
+- cantidad (numeric(12,3), not null, check > 0)
+- unique (producto_id, material_id)
+
+13) mesas
+- id (PK)
+- tienda_id (FK -> tiendas.id, not null)
+- numero (int, not null)
+- capacidad_minima (int, not null, check > 0)
+- capacidad_maxima (int, not null, check >= capacidad_minima)
+- estado (enum: DISPONIBLE, OCUPADA, RESERVADA, MANTENIMIENTO)
+- activo (boolean, not null, default true)
+- creado_en (timestamptz, not null, default now())
+- actualizado_en (timestamptz, not null, default now())
+- unique (tienda_id, numero)
+
+14) reservas
+- id (PK)
+- tienda_id (FK -> tiendas.id, not null)
+- mesa_id (FK -> mesas.id, not null)
+- nombre_cliente (varchar(120), not null)
+- fecha_hora_inicio (timestamptz, not null)
+- fecha_hora_fin (timestamptz, not null)
+- estado (enum: ACTIVA, CANCELADA, FINALIZADA)
+- creado_por_usuario_id (FK -> usuarios.id)
+- creado_en (timestamptz, not null, default now())
+- actualizado_en (timestamptz, not null, default now())
+- check (fecha_hora_fin > fecha_hora_inicio)
+
+15) pedidos
+- id (PK)
+- tienda_id (FK -> tiendas.id, not null)
+- mesa_id (FK -> mesas.id)
+- tipo (enum: MESA, DOMICILIO)
+- estado (enum: PENDIENTE, EN_PREPARACION, LISTO, ENTREGADO, PAGADO, CANCELADO)
+- subtotal (numeric(12,2), not null, default 0, check >= 0)
+- impuesto (numeric(12,2), not null, default 0, check >= 0)
+- descuento (numeric(12,2), not null, default 0, check >= 0)
+- total (numeric(12,2), not null, default 0, check >= 0)
+- notas (text)
+- creado_por_usuario_id (FK -> usuarios.id)
+- fecha_creacion (timestamptz, not null, default now())
+- actualizado_en (timestamptz, not null, default now())
+
+16) detalle_pedido
+- id (PK)
+- pedido_id (FK -> pedidos.id, not null)
+- producto_id (FK -> productos.id, not null)
+- cantidad (numeric(12,3), not null, check > 0)
+- precio_unitario (numeric(12,2), not null, check >= 0)
+- subtotal_linea (numeric(12,2), not null, check >= 0)
+- unique (pedido_id, producto_id)
+
+17) pagos
+- id (PK)
+- tienda_id (FK -> tiendas.id, not null)
+- pedido_id (FK -> pedidos.id, not null)
+- monto (numeric(12,2), not null, check > 0)
+- metodo_pago (enum: EFECTIVO, TARJETA, TRANSFERENCIA, QR)
+- referencia_externa (varchar(120))
+- fecha (timestamptz, not null, default now())
+- creado_por_usuario_id (FK -> usuarios.id)
+
+18) movimientos_inventario (recomendado)
+- id (PK)
+- tienda_id (FK -> tiendas.id, not null)
+- material_id (FK -> materiales.id)
+- producto_id (FK -> productos.id)
+- tipo_movimiento (enum: ENTRADA, SALIDA, AJUSTE)
+- cantidad (numeric(12,3), not null, check > 0)
+- motivo (varchar(255))
+- creado_por_usuario_id (FK -> usuarios.id)
+- creado_en (timestamptz, not null, default now())
+- regla: material_id o producto_id debe venir informado (al menos uno)
+
+RELACIONES CLAVE
+- tiendas -> configuraciones_tienda: uno a muchos.
+- tiendas -> categorias/productos/materiales/mesas/reservas/pedidos/pagos/movimientos_inventario: uno a muchos.
+- usuarios <-> roles: muchos a muchos por usuario_rol.
+- usuarios <-> roles por tienda: muchos a muchos por usuario_rol con tienda_id.
+- roles <-> permisos: muchos a muchos por rol_permiso.
+- categorias -> productos: uno a muchos.
+- productos <-> materiales: muchos a muchos por producto_material.
+- mesas -> pedidos: uno a muchos (solo cuando el tipo sea MESA).
+- mesas -> reservas: uno a muchos.
+- pedidos -> detalle_pedido: uno a muchos.
+- pedidos -> pagos: uno a muchos.
+
+NOTA DE IMPLEMENTACION
+- Fuente de verdad: modelos SQLAlchemy + migraciones Alembic.
+- Adminer: solo visualizacion y consultas, no cambios manuales de estructura.
+- Multi-tienda desde dia 1: crear una tienda default e insertar todos los catalogos iniciales asociados a esa tienda.
