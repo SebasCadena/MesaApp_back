@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.models.user_model import User
 from app.schemas.user_schema import UserCreate, UserRead
+from auth.auth import get_password_hash
 from config.config import get_db
 
 router = APIRouter(prefix="/usuarios", tags=["usuarios"])
@@ -16,7 +17,9 @@ def list_users(db: Session = Depends(get_db)) -> list[User]:
 
 @router.post("", response_model=UserRead, status_code=status.HTTP_201_CREATED)
 def create_user(payload: UserCreate, db: Session = Depends(get_db)) -> User:
-    user = User(**payload.model_dump())
+    data = payload.model_dump()
+    data["password_hash"] = get_password_hash(data["password_hash"])
+    user = User(**data)
     db.add(user)
 
     try:

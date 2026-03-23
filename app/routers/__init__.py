@@ -16,6 +16,7 @@ from app.routers.store_setting_router import router as store_setting_router
 from app.routers.table_router import router as table_router
 from app.routers.user_role_router import router as user_role_router
 from app.routers.user_router import router as user_router
+from app.routers.auth_router import router as auth_router
 
 __all__ = [
 	"store_router",
@@ -36,4 +37,5 @@ __all__ = [
 	"permission_router",
 	"role_permission_router",
 	"user_role_router",
+	"auth_router"
 ]
