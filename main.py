@@ -1,7 +1,11 @@
 from fastapi import FastAPI
 
 from app.routers import (
+    category_router,
+    material_router,
     permission_router,
+    product_material_router,
+    product_router,
     role_permission_router,
     role_router,
     store_router,
@@ -23,6 +27,10 @@ def healthcheck():
 
 
 app.include_router(store_router)
+app.include_router(category_router)
+app.include_router(product_router)
+app.include_router(material_router)
+app.include_router(product_material_router)
 app.include_router(user_router)
 app.include_router(role_router)
 app.include_router(permission_router)
