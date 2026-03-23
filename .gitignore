@@ -6,5 +6,5 @@ venv
 .env.plantilla
 
 docs/
-
+db/
 backups/
