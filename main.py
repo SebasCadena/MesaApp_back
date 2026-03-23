@@ -19,6 +19,7 @@ from app.routers import (
     table_router,
     user_role_router,
     user_router,
+    auth_router
 )
 
 app = FastAPI(title="MesaApp API")
@@ -52,3 +53,4 @@ app.include_router(role_router)
 app.include_router(permission_router)
 app.include_router(role_permission_router)
 app.include_router(user_role_router)
+app.include_router(auth_router)

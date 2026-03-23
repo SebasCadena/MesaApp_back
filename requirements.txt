@@ -4,3 +4,6 @@ python-dotenv
 sqlalchemy
 alembic
 psycopg[binary]
+python-jose[cryptography] 
+passlib
+argon2-cffi
