@@ -4,18 +4,26 @@ from sqlalchemy.orm import Session
 
 from app.models.app_setting_model import AppSetting
 from app.schemas.app_setting_schema import AppSettingCreate, AppSettingRead
+from auth.roles import require_permissions
 from config.config import get_db
 
 router = APIRouter(prefix="/configuraciones-app", tags=["configuraciones-app"])
 
 
 @router.get("", response_model=list[AppSettingRead])
-def list_app_settings(db: Session = Depends(get_db)) -> list[AppSetting]:
+def list_app_settings(
+    db: Session = Depends(get_db),
+    _: dict = Depends(require_permissions(["config_app.ver"])),
+) -> list[AppSetting]:
     return db.query(AppSetting).order_by(AppSetting.id.asc()).all()
 
 
 @router.post("", response_model=AppSettingRead, status_code=status.HTTP_201_CREATED)
-def create_app_setting(payload: AppSettingCreate, db: Session = Depends(get_db)) -> AppSetting:
+def create_app_setting(
+    payload: AppSettingCreate,
+    db: Session = Depends(get_db),
+    _: dict = Depends(require_permissions(["config_app.crear"])),
+) -> AppSetting:
     row = AppSetting(**payload.model_dump())
     db.add(row)
 

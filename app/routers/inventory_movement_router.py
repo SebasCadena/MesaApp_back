@@ -4,19 +4,25 @@ from sqlalchemy.orm import Session
 
 from app.models.inventory_movement_model import InventoryMovement
 from app.schemas.inventory_movement_schema import InventoryMovementCreate, InventoryMovementRead
+from auth.roles import require_permissions
 from config.config import get_db
 
 router = APIRouter(prefix="/movimientos-inventario", tags=["movimientos-inventario"])
 
 
 @router.get("", response_model=list[InventoryMovementRead])
-def list_inventory_movements(db: Session = Depends(get_db)) -> list[InventoryMovement]:
+def list_inventory_movements(
+    db: Session = Depends(get_db),
+    _: dict = Depends(require_permissions(["inventario_movimientos.ver"])),
+) -> list[InventoryMovement]:
     return db.query(InventoryMovement).order_by(InventoryMovement.id.asc()).all()
 
 
 @router.post("", response_model=InventoryMovementRead, status_code=status.HTTP_201_CREATED)
 def create_inventory_movement(
-    payload: InventoryMovementCreate, db: Session = Depends(get_db)
+    payload: InventoryMovementCreate,
+    db: Session = Depends(get_db),
+    _: dict = Depends(require_permissions(["inventario_movimientos.crear"])),
 ) -> InventoryMovement:
     row = InventoryMovement(**payload.model_dump())
     db.add(row)

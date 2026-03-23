@@ -4,18 +4,26 @@ from sqlalchemy.orm import Session
 
 from app.models.table_model import TableModel
 from app.schemas.table_schema import TableCreate, TableRead
+from auth.roles import require_permissions
 from config.config import get_db
 
 router = APIRouter(prefix="/mesas", tags=["mesas"])
 
 
 @router.get("", response_model=list[TableRead])
-def list_tables(db: Session = Depends(get_db)) -> list[TableModel]:
+def list_tables(
+    db: Session = Depends(get_db),
+    _: dict = Depends(require_permissions(["mesas.ver"])),
+) -> list[TableModel]:
     return db.query(TableModel).order_by(TableModel.id.asc()).all()
 
 
 @router.post("", response_model=TableRead, status_code=status.HTTP_201_CREATED)
-def create_table(payload: TableCreate, db: Session = Depends(get_db)) -> TableModel:
+def create_table(
+    payload: TableCreate,
+    db: Session = Depends(get_db),
+    _: dict = Depends(require_permissions(["mesas.crear"])),
+) -> TableModel:
     row = TableModel(**payload.model_dump())
     db.add(row)
 

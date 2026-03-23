@@ -4,18 +4,26 @@ from sqlalchemy.orm import Session
 
 from app.models.payment_model import Payment
 from app.schemas.payment_schema import PaymentCreate, PaymentRead
+from auth.roles import require_permissions
 from config.config import get_db
 
 router = APIRouter(prefix="/pagos", tags=["pagos"])
 
 
 @router.get("", response_model=list[PaymentRead])
-def list_payments(db: Session = Depends(get_db)) -> list[Payment]:
+def list_payments(
+    db: Session = Depends(get_db),
+    _: dict = Depends(require_permissions(["pagos.ver"])),
+) -> list[Payment]:
     return db.query(Payment).order_by(Payment.id.asc()).all()
 
 
 @router.post("", response_model=PaymentRead, status_code=status.HTTP_201_CREATED)
-def create_payment(payload: PaymentCreate, db: Session = Depends(get_db)) -> Payment:
+def create_payment(
+    payload: PaymentCreate,
+    db: Session = Depends(get_db),
+    _: dict = Depends(require_permissions(["pagos.crear"])),
+) -> Payment:
     row = Payment(**payload.model_dump())
     db.add(row)
 
